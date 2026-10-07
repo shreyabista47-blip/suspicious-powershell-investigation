@@ -40,9 +40,9 @@ I checked that it worked on CLIENT01:
 - `gpupdate /force` and `gpresult /r /scope:computer` showed the GPO was applied
 - `auditpol /get /subcategory:"Process Creation"` showed **Success**
 
-![GPO settings](screenshots/P3-01-gpo-settings-report.png)
-![GPO applied on client](screenshots/P3-02-gpresult-gpo-applied.png)
-![Audit policy check](screenshots/P3-03-auditpol-process-creation.png)
+![GPO settings](Project3-Screenshots/P3-01-gpo-settings-report.png)
+![GPO applied on client](Project3-Screenshots/P3-02-gpresult-gpo-applied.png)
+![Audit policy check](Project3-Screenshots/P3-03-auditpol-process-creation.png)
 
 ---
 
@@ -54,8 +54,8 @@ I installed **Sysmon64** on CLIENT01 with the SwiftOnSecurity configuration. Sys
 .\Sysmon64.exe -accepteula -i sysmonconfig.xml
 ```
 
-![Sysmon installed](screenshots/P3-04-sysmon-installed.png)
-![Sysmon log working](screenshots/P3-05-sysmon-operational-log.png)
+![Sysmon installed](Project3-Screenshots/P3-04-sysmon-installed.png)
+![Sysmon log working](Project3-Screenshots/P3-05-sysmon-operational-log.png)
 
 ---
 
@@ -71,7 +71,7 @@ $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
 powershell.exe -NoProfile -EncodedCommand $enc
 ```
 
-![Test 1](screenshots/P3-06-test1-encoded-command.png)
+![Test 1](Project3-Screenshots/P3-06-test1-encoded-command.png)
 
 **Test 2: Download with PowerShell**
 
@@ -89,15 +89,15 @@ Invoke-WebRequest -Uri "https://example.com" -OutFile "C:\Users\Public\test-down
 
 I found `HOSTNAME.EXE` started by `powershell.exe` (Parent Process ID **900**), running as `CORP\Administrator` with **High** integrity.
 
-![Child process](screenshots/P3-07a-sysmon-child-hostname.png)
-![Child process parent](screenshots/P3-07b-sysmon-child-hostname-parent.png)
+![Child process](Project3-Screenshots/P3-07a-sysmon-child-hostname.png)
+![Child process parent](Project3-Screenshots/P3-07b-sysmon-child-hostname-parent.png)
 
 ### 4.2 Finding the parent process (Sysmon Event 1)
 
 I searched for Process ID 900. It was `powershell.exe`, started less than 1 second before `HOSTNAME.EXE`. Its command line had `-EncodedCommand` with a long Base64 string.
 
-![Parent PowerShell](screenshots/P3-08a-sysmon-parent-powershell.png)
-![Encoded command line](screenshots/P3-08b-sysmon-parent-encoded-commandline.png)
+![Parent PowerShell](Project3-Screenshots/P3-08a-sysmon-parent-powershell.png)
+![Encoded command line](Project3-Screenshots/P3-08b-sysmon-parent-encoded-commandline.png)
 
 **Process tree:**
 
@@ -118,7 +118,7 @@ I copied the Base64 string from the log and decoded it:
 
 Result: `whoami; hostname`
 
-![Decoded command](screenshots/P3-09-decoded-command.png)
+![Decoded command](Project3-Screenshots/P3-09-decoded-command.png)
 
 ### 4.4 Network connection (Sysmon Event 3)
 
@@ -132,9 +132,9 @@ Result: `whoami; hostname`
 
 The log did not include a host name, so I checked the IP with `Resolve-DnsName example.com`. The IP **104.20.23.154** belongs to **example.com**.
 
-![Network event](screenshots/P3-10a-sysmon-event3-network.png)
-![Network destination](screenshots/P3-10b-sysmon-event3-network-destination.png)
-![DNS check](screenshots/P3-11-resolve-dns-example-com.png)
+![Network event](Project3-Screenshots/P3-10a-sysmon-event3-network.png)
+![Network destination](Project3-Screenshots/P3-10b-sysmon-event3-network-destination.png)
+![DNS check](Project3-Screenshots/P3-11-resolve-dns-example-com.png)
 
 ### 4.5 Exact commands (PowerShell Event 4104)
 
@@ -142,14 +142,14 @@ Script Block Logging recorded:
 - The full `Invoke-WebRequest` command, with the URL and the output file path
 - The **decoded** Test 1 command (`whoami; hostname`) in plain text. So an analyst can read hidden commands without decoding them by hand.
 
-![4104 download](screenshots/P3-12-powershell-4104-invoke-webrequest.png)
-![4104 decoded](screenshots/P3-13-powershell-4104-decoded-whoami.png)
+![4104 download](Project3-Screenshots/P3-12-powershell-4104-invoke-webrequest.png)
+![4104 decoded](Project3-Screenshots/P3-13-powershell-4104-decoded-whoami.png)
 
 ### 4.6 Native Windows evidence (Security Event 4688)
 
 Event 4688 also showed the encoded PowerShell, its full command line, and its parent process. This is important because many organizations do not have Sysmon.
 
-![Event 4688](screenshots/P3-14-security-4688-encoded-powershell.png)
+![Event 4688](Project3-Screenshots/P3-14-security-4688-encoded-powershell.png)
 
 ---
 
